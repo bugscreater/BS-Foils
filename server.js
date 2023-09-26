@@ -6,6 +6,7 @@ let bodyParser = require('body-parser');
   
 // Express Route
 const adminRoute = require('./routes/adminRoute')
+const employeeRoute = require('./routes/employeeRoute')
   
 const app = express()
 const port = 4000
@@ -29,7 +30,8 @@ mongoose.connect(dbURL, {
 app.use(bodyParser.json())
 
 // Routes
-app.use('/', adminRoute)
+app.use('/', adminRoute);
+app.use('/', employeeRoute);
 
 // Start the server
 app.listen(port, () => {
