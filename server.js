@@ -13,8 +13,8 @@ const adminRoute = require('./routes/adminRoute')
 const employeeRoute = require('./routes/employeeRoute')
   
 const app = express()
-const port = 4000
-const dbURL = 'mongodb://127.0.0.1:27017/BS-Foils'
+const port = process.env.PORT || 4000;
+const dbURL = process.env.DB_URL;
 
   
 app.use(cors())
