@@ -2,8 +2,9 @@ const  express = require("express");
 const  router = express.Router();
 const employeeSchema = require('../models/employee');
 const adminSchema = require('../models/admin');
+const verifyToken = require("./verifyToken");
 
-router.post("/create-employee", async(req, res) => {
+router.post("/create-employee",verifyToken, async(req, res) => {
     const {userId, personalInfo,emergencyContactInfo,officials,salaryDetails,bankDetails} = req.body;
     try {
         const admin = await adminSchema.findOne({adminId:userId});
@@ -19,7 +20,7 @@ router.post("/create-employee", async(req, res) => {
     }
 });
 
-router.put("/update-employee",async(req,res)=>{
+router.put("/update-employee",verifyToken,async(req,res)=>{
     const {userId,employeeId, personalInfo, emergencyContactInfo, officials, salaryDetails,bankDetails} = req.body;
     try {
         const admin = await adminSchema.findOne({adminId:userId});
@@ -44,7 +45,7 @@ router.put("/update-employee",async(req,res)=>{
     }
 })
 
-router.get("/get-employees", async(req,res)=>{
+router.get("/get-employees",verifyToken, async(req,res)=>{
     try {
         const employees = await employeeSchema.find({});
         res.status(200).json(employees);
@@ -53,7 +54,7 @@ router.get("/get-employees", async(req,res)=>{
     }
 })
 
-router.get("/find-employee/:employeeId",async(req,res)=>{
+router.get("/find-employee/:employeeId",verifyToken, async(req,res)=>{
     try {
         const {employeeId} = req.params;
         const employee = await employeeSchema.findOne({"personalInfo.employeeId":employeeId});
@@ -63,7 +64,7 @@ router.get("/find-employee/:employeeId",async(req,res)=>{
     }
 })
 
-router.delete("/delete-employee/:employeeId/:userId",async(req,res)=>{
+router.delete("/delete-employee/:employeeId/:userId",verifyToken, async(req,res)=>{
     try {
         const {employeeId,userId} = req.params;
         const admin = await adminSchema.findOne({adminId:userId});
