@@ -4,14 +4,13 @@ const bcrypt = require('bcrypt');
 const adminSchema = require('../models/admin');
 
 router.post("/create-admin", async(req, res) => {
-    const {email,password} = req.body;
+    const {email,password,adminId} = req.body;
     try {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      const admin = new adminSchema({ email:email,password:hashedPassword });
+      const admin = new adminSchema({ email:email,password:hashedPassword,adminId:adminId});
       await admin.save()
       res.status(201).json(admin)
-  
     } catch (error) {
       res.status(400).json({ error: 'Failed' });
     }

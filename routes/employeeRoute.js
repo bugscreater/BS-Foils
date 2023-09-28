@@ -1,24 +1,55 @@
 const  express = require("express");
 const  router = express.Router();
 const employeeSchema = require('../models/employee');
+const adminSchema = require('../models/admin');
 
 router.post("/create-employee", async(req, res) => {
-    const {personalInfo,emergencyContactInfo,officials,salaryDetails,bankDetails} = req.body;
+    const {userId, personalInfo,emergencyContactInfo,officials,salaryDetails,bankDetails} = req.body;
     try {
-        const employee = new employeeSchema({ personalInfo:personalInfo,emergencyContactInfo:emergencyContactInfo,officials:officials,salaryDetails:salaryDetails,bankDetails:bankDetails });
-        await employee.save()
-        res.status(201).json(employee);
-    } catch (error) {
-        res.status(400).json({ error: 'Failed' });
+        const admin = await adminSchema.findOne({adminId:userId});
+        if(admin){
+            const employee = new employeeSchema({ personalInfo:personalInfo,emergencyContactInfo:emergencyContactInfo,officials:officials,salaryDetails:salaryDetails,bankDetails:bankDetails });
+            await employee.save()
+            res.status(201).json(employee);
+        }else{
+            res.status(401).json({error: "Unauthorized"});
+        }
+    }catch (error) {
+        res.status(400).json(error);
     }
 });
+
+router.put("/update-employee",async(req,res)=>{
+    const {userId,employeeId, personalInfo, emergencyContactInfo, officials, salaryDetails,bankDetails} = req.body;
+    try {
+        const admin = await adminSchema.findOne({adminId:userId});
+        const employee = await employeeSchema.findOne({"personalInfo.employeeId":employeeId});
+        const newEmployeeId = personalInfo.employeeId;
+        if(admin && employee && newEmployeeId){
+            const updatedData = { personalInfo:personalInfo,emergencyContactInfo:emergencyContactInfo,officials:officials,salaryDetails:salaryDetails,bankDetails:bankDetails };
+            const filter = {"personalInfo.employeeId":employeeId};
+            await employeeSchema.findOneAndUpdate(filter,updatedData);
+            const newFilter = {"personalInfo.employeeId":personalInfo.employeeId}
+            const updatedEmployee =  await employeeSchema.findOne(newFilter);
+            res.status(201).json(updatedEmployee);
+        }else if(!admin){
+            res.status(401).json({error: "Unauthorized"});
+        }else if(!employee){
+            res.status(404).json({error:"employee not found!"})
+        }else if(!newEmployeeId){
+            res.status(400).json({error:"employee id is mandatory in personalInfo!"})
+        }
+    } catch (error) {
+        res.status(400).json(error); 
+    }
+})
 
 router.get("/get-employees", async(req,res)=>{
     try {
         const employees = await employeeSchema.find({});
-        res.status(201).json(employees);
+        res.status(200).json(employees);
     } catch (error) {
-        res.status(400).json({ error: 'Failed' }); 
+        res.status(400).json(error); 
     }
 })
 
@@ -26,19 +57,26 @@ router.get("/find-employee/:employeeId",async(req,res)=>{
     try {
         const {employeeId} = req.params;
         const employee = await employeeSchema.findOne({"personalInfo.employeeId":employeeId});
-        res.status(201).json(employee);
+        res.status(200).json(employee);
     } catch (error) {
-        res.status(400).json({error:'Failed'});
+        res.status(400).json(error);
     }
 })
 
-router.delete("/delete-employee/:employeeId",async(req,res)=>{
+router.delete("/delete-employee/:employeeId/:userId",async(req,res)=>{
     try {
-        const {employeeId} = req.params;
-        const res = await employeeSchema.findOneAndDelete({"personalInfo.employeeId":employeeId});
-        res.status(201).json(res);
+        const {employeeId,userId} = req.params;
+        const admin = await adminSchema.findOne({adminId:userId});
+       
+        if(admin){
+            await employeeSchema.findOneAndDelete({"personalInfo.employeeId":employeeId});
+            res.status(200).json({});
+        }else{
+            res.status(401).json({error:"Unauthorized"})
+        }
     } catch (error) {
-        res.status(400).json({error:'Failed'});
+        console.log(error);
+        res.status(400).json(error);
     }
 })
 

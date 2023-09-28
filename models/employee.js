@@ -1,56 +1,55 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const employeeSchema = new mongoose.Schema({
-    personalInfo:{
-        firstName: String,
-        emailId:String,
-        dob: Date,
-        lastName: String,
-        ContactNo: String,
-        Gender: String,
-        BloodGroup: String,
-        MartialStatus: String,
-        EducationLevel: String,
-        Religion: String,
-        panNumber: String,
-        AadharNumber: String,
-        Nationality:String,
-        employeeId:String
+  personalInfo: {
+    firstName: { type: String, required: true },
+    emailId: { type: String, required: true,unique:true },
+    dob: Date,
+    lastName: { type: String, required: true },
+    contactNo: { type: String, required: true,unique:true },
+    gender: { type: String, required: true },
+    bloodGroup: String,
+    martialStatus: String,
+    educationLevel: String,
+    religion: String,
+    panNumber: String,
+    aadharNumber: { type: String, required: true,unique:true },
+    nationality: { type: String, required: true },
+    employeeId: { type: String, required: true ,unique:true},
+  },
+  emergencyContactInfo: {
+    fullName: String,
+    contactNo: String,
+    relationShip: String,
+  },
+  officials: {
+    joiningDate: Date,
+    department: String,
+    role: String,
+    workShift: String,
+    workTimings: String,
+    totalWorkingHrsPerDay: String,
+    overTimeRatePerHour: String,
+    status: Boolean,
+  },
+  salaryDetails: {
+    totalMonthlySalary: String,
+    BasicSalary: String,
+    PF: {
+      totalPF: String,
+      employeePart: String,
     },
-    emergencyContactInfo:{
-        fullName: String,
-        contactNo: String,
-        relationShip: String,
+    ESI: {
+      totalESI: String,
     },
-    officials:{
-        joiningDate: Date,
-        department: String,
-        role: String,
-        workShift: String,
-        workTimings: String,
-        totalWorkingHrsPerDay: String,
-        overTimeRatePerHour: String,
-        status:Boolean
-    },
-    salaryDetails:{
-        totalMonthlySalary: String,
-        BasicSalary: String,
-        PF:{
-            totalPF: String,
-            employeePart: String
-        },
-        ESI:{
-            totalESI: String
-        }
-    },
-    bankDetails:{
-        bankName: String,
-        accountNo: String,
-        branchName: String,
-        ifscCode: String,
-        accountType: String
-    }
-
+  },
+  bankDetails: {
+    bankName: String,
+    accountNo: String,
+    branchName: String,
+    ifscCode: String,
+    accountType: String,
+  },
 });
 
-module.exports = mongoose.model('Employee', employeeSchema);
+module.exports = mongoose.model("Employee", employeeSchema);
