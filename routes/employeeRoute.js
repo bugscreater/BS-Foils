@@ -4,6 +4,7 @@ const employeeSchema = require('../models/employee');
 const adminSchema = require('../models/admin');
 const verifyToken = require("./verifyToken");
 
+
 router.post("/create-employee",verifyToken, async(req, res) => {
     const {userId, personalInfo,emergencyContactInfo,officials,salaryDetails,bankDetails} = req.body;
     try {
@@ -64,9 +65,10 @@ router.get("/find-employee/:employeeId",verifyToken, async(req,res)=>{
     }
 })
 
-router.delete("/delete-employee/:employeeId/:userId",verifyToken, async(req,res)=>{
+router.delete("/delete-employee/:employeeId",verifyToken, async(req,res)=>{
     try {
-        const {employeeId,userId} = req.params;
+        const {employeeId} = req.params;
+        const {userId} = req.body;
         const admin = await adminSchema.findOne({adminId:userId});
        
         if(admin){
@@ -76,7 +78,27 @@ router.delete("/delete-employee/:employeeId/:userId",verifyToken, async(req,res)
             res.status(401).json({error:"Unauthorized"})
         }
     } catch (error) {
-        console.log(error);
+        res.status(400).json(error);
+    }
+})
+
+router.patch("/update-today-attendence/:employeeId",verifyToken, async(req,res)=>{
+    try {
+        const {employeeId} = req.params;
+        const {userId} = req.body;
+        const admin = await adminSchema.findOne({adminId:userId});
+        const {inTime,outTime,Break,totalHrs,overTime,shift,status} = req.body;
+       
+        if(admin){
+            const employeeFilter = {"personalInfo.employeeId":employeeId};
+            const attendence = {inTime:inTime,outTime:outTime,Break:Break,totalHrs:totalHrs,overTime:overTime,shift:shift,status:status};
+            await employeeSchema.findOneAndUpdate(employeeFilter,{$set:{todayAttendence:attendence}});
+            const employee = await employeeSchema.findOne(employeeFilter);
+            res.status(200).json(employee);
+        }else{
+            res.status(401).json({error:"Unauthorized"})
+        }
+    } catch (error) {
         res.status(400).json(error);
     }
 })

@@ -50,6 +50,15 @@ const employeeSchema = new mongoose.Schema({
     ifscCode: String,
     accountType: String,
   },
+  todayAttendence:{
+    inTime: Date,
+    outTime: Date,
+    Break: String,
+    totalHrs: String,
+    overTime: String,
+    shift: String,
+    status: String
+  }
 });
 
 module.exports = mongoose.model("Employee", employeeSchema);
