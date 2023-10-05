@@ -3,11 +3,39 @@ const  router = express.Router();
 const employeeSchema = require('../models/employee');
 const adminSchema = require('../models/admin');
 const verifyToken = require("./verifyToken");
+const joi = require("joi");
 
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTFkODRjMWM4MTVmOTczYTRlZjAzZjEiLCJpYXQiOjE2OTY1MzcxNTN9.U0uvHDPhaGAzrQh-tfN7aaoq2wvZC-IXKSJX4DVvvus
 
 router.post("/create-employee",verifyToken, async(req, res) => {
     const {userId, personalInfo,emergencyContactInfo,officials,salaryDetails,bankDetails} = req.body;
     try {
+        const personalInfoSchema = joi.object().keys({
+            firstName: joi.string().min(5),
+            emailId:joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
+            lastName: joi.string().min(5),
+            contactNo: joi.string.equal(10),
+            gender: joi.string().min(1),
+            aadharName: joi.string().equal(12),
+            nationality: joi.string().min(1),
+            employeeId: joi.string().min(5)
+        });
+         
+        const personalInfoData = {
+            firstName: personalInfo.firstName,
+            emailId: personalInfo.emailId,
+            lastName: personalInfo.lastName,
+            contactNo: personalInfo.contactNo,
+            gender: personalInfo.gender,
+            aadharName: personalInfo.aadharName,
+            nationality: personalInfo.nationality,
+            employeeId: personalInfo.employeeId
+        }
+        const personalValidation = personalInfoSchema.validate(personalInfoData);
+        if(personalValidation.error){
+          return res.status(401).json({error:personalValidation.error});
+        } 
+
         const admin = await adminSchema.findOne({adminId:userId});
         if(admin){
             const employee = new employeeSchema({ personalInfo:personalInfo,emergencyContactInfo:emergencyContactInfo,officials:officials,salaryDetails:salaryDetails,bankDetails:bankDetails });
@@ -48,17 +76,19 @@ router.put("/update-employee",verifyToken,async(req,res)=>{
 
 router.get("/get-employees",verifyToken, async(req,res)=>{
     try {
-        const employees = await employeeSchema.find({});
+        const {limit,skip} = req.body;
+        const employees = await employeeSchema.find({}).limit(limit).skip(skip);
         res.status(200).json(employees);
     } catch (error) {
         res.status(400).json(error); 
     }
 })
 
-router.get("/find-employee/:employeeId",verifyToken, async(req,res)=>{
+router.get("/find-employee",verifyToken, async(req,res)=>{
     try {
-        const {employeeId} = req.params;
-        const employee = await employeeSchema.findOne({"personalInfo.employeeId":employeeId});
+        const {searchQuery,limit,skip} = req.body;
+        const regex = new RegExp(searchQuery, 'i');
+        const employee = await employeeSchema.find({$or:[{"personalInfo.employeeId":regex},{"personalInfo.firstName":regex},{"personalInfo.lastName":regex}]}).limit(limit).skip(skip);
         res.status(200).json(employee);
     } catch (error) {
         res.status(400).json(error);
@@ -102,6 +132,7 @@ router.patch("/update-today-attendence/:employeeId",verifyToken, async(req,res)=
         res.status(400).json(error);
     }
 })
+
 
   
 module.exports = router;

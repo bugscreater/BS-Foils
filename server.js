@@ -9,8 +9,9 @@ let dotenv = require('dotenv');
 dotenv.config();
   
 // Express Route
-const adminRoute = require('./routes/adminRoute')
-const employeeRoute = require('./routes/employeeRoute')
+const adminRoute = require('./routes/adminRoute');
+const employeeRoute = require('./routes/employeeRoute');
+const attendenceRoute = require('./routes/attendenceRoute');
   
 const app = express()
 const port = process.env.PORT || 4000;
@@ -36,6 +37,7 @@ app.use(bodyParser.json())
 // Routes
 app.use('/', adminRoute);
 app.use('/', employeeRoute);
+app.use('/', attendenceRoute);
 
 // Start the server
 app.listen(port, () => {
