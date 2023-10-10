@@ -12,6 +12,7 @@ dotenv.config();
 const adminRoute = require('./routes/adminRoute');
 const employeeRoute = require('./routes/employeeRoute');
 const attendenceRoute = require('./routes/attendenceRoute');
+
   
 const app = express()
 const port = process.env.PORT || 4000;

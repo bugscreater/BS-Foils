@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const sendEmail = async (email, subject, text) => {
+const sendEmail = async (email, subject, text,filename,buffer) => {
     try {
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -11,7 +11,7 @@ const sendEmail = async (email, subject, text) => {
             debug:true,
             secureConnection:false,
             auth: {
-                user: "your email...",
+                user: "pandeyshubhambhu09@gmail.com",
                 pass: process.env.PASS,
             },
             tls:{
@@ -23,6 +23,14 @@ const sendEmail = async (email, subject, text) => {
             to: email,
             subject: subject,
             text: text,
+            attachments: [
+                {
+                  filename,
+                  content: buffer,
+                  contentType:
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                },
+            ],
         });
     } catch (error) {
         console.log(error, "email not sent");

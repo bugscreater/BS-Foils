@@ -8,6 +8,8 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const joi = require("joi");
 
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTFkODRjMWM4MTVmOTczYTRlZjAzZjEiLCJpYXQiOjE2OTY5NTU0MjZ9.glqNNg25tgSNqljiymoZT0MPsOFQHG4q0toTvoSmiLo
+
 router.post("/create-admin", async (req, res) => {
   const { email, password, adminId } = req.body;
   try {
@@ -109,7 +111,7 @@ router.post("/send-password-reset-mail", async (req, res) => {
         }).save();
       }
       const link = `${process.env.BASE_URL}/password-reset/${admin._id}/${token.token}`;
-      await sendEmail(email, "BS-Foils - Password Reset", link);
+      await sendEmail(email, "BS-Foils - Password Reset", link, null, null);
       res
         .status(200)
         .json({ message: "password reset link sent to your email account" });
