@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const adminSchema = require("../models/admin");
 
 module.exports = async function(req,res,next){
   const token = req.header("auth-token");
@@ -8,9 +9,15 @@ module.exports = async function(req,res,next){
   }
 
   try {
-    const verified = jwt.verify(token,process.env.TOKEN_SECRET);
+    const adminToken =  await adminSchema.findOne(
+      { authToken: token }
+    );
+    
+    let verified = jwt.verify(token,process.env.TOKEN_SECRET);
+    if(!adminToken) return res.status(400).send("Invalid token!");
     req.user = verified;
     next();
+    
   } catch (error) {
     res.status(400).send("Invalid token!");
   }

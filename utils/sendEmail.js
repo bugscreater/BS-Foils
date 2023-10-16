@@ -23,7 +23,7 @@ const sendEmail = async (email, subject, text,filename,buffer) => {
             to: email,
             subject: subject,
             text: text,
-            attachments: [
+            attachments: filename && buffer && [
                 {
                   filename,
                   content: buffer,

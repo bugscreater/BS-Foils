@@ -51,8 +51,8 @@ const employeeSchema = new mongoose.Schema({
     accountType: String,
   },
   todayAttendence:{
-    inTime: Date,
-    outTime: Date,
+    inTime: Number, // Assuming inTime is stored railway-time format...
+    outTime: Number, // Assuming outTime is stored railway-time format...
     Break: String,
     totalHrs: String,
     overTime: String,

@@ -7,8 +7,8 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const joi = require("joi");
+const verifyToken = require("./verifyToken");
 
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTFkODRjMWM4MTVmOTczYTRlZjAzZjEiLCJpYXQiOjE2OTY5NTU0MjZ9.glqNNg25tgSNqljiymoZT0MPsOFQHG4q0toTvoSmiLo
 
 router.post("/create-admin", async (req, res) => {
   const { email, password, adminId } = req.body;
@@ -82,6 +82,19 @@ router.post("/admin-login", async (req, res) => {
     res.status(400).json(error);
   }
 });
+
+router.post("/admin-logout",verifyToken,async(req,res)=>{
+  try {
+    const token = req.header("auth-token");
+    await adminSchema.findOneAndUpdate(
+      { authToken: token },{$unset:{authToken:""}}
+    );
+    delete req.header("auth-token");
+    return res.status(200).json("logged out!");
+  } catch (error) {
+    res.status(400).json(error);
+  }
+})
 
 router.post("/send-password-reset-mail", async (req, res) => {
   try {

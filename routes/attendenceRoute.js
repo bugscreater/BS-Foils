@@ -59,7 +59,7 @@ router.get("/today-attendence", verifyToken, async (req, res) => {
 
     const employeesAttendence = await employeeSchema
       .find({})
-      .select({ todayAttendence: 1, _id: 0 })
+      .select({ todayAttendence: 1, _id: 0, personalInfo: 1 })
       .limit(limit)
       .skip(skip);
     res.status(200).json(employeesAttendence);
@@ -81,7 +81,7 @@ router.get("/employee-today-attendence", verifyToken, async (req, res) => {
           { "personalInfo.lastName": regex },
         ],
       })
-      .select({ todayAttendence: 1, _id: 0 });
+      .select({ todayAttendence: 1, _id: 0, personalInfo: 1 });
     if (employeeAttendence) {
       return res.status(200).json(employeeAttendence);
     }
@@ -132,10 +132,81 @@ router.post("/update-attendence-register", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/get-attendence-register", verifyToken, async (req, res) => {
+  const { month, year } = req.body;  
+
+  const attendenceRegister = await attendenceSheetSchema.find({}).select({
+    register: 1,
+    _id: 0,
+    employeeId: 1,
+    employeeFirstName: 1,
+    employeeLastName: 1,
+  });
+
+  const monthlyAttendenceRecord = [];
+  attendenceRegister.forEach((Sheet) => {
+    const { register, employeeId, employeeFirstName, employeeLastName } = Sheet;
+    const res = {};
+    res.employeeId = employeeId;
+    res.fname = employeeFirstName;
+    res.lname = employeeLastName;
+    const attendenceSheet = [];
+
+    register.forEach((attendence) => {
+      if (attendence.month === month && attendence.year === year) {
+        attendenceSheet.push({
+          day: attendence.day,
+          status: attendence.status,
+        });
+      }
+    });
+
+    for (let i = 1; i <= 31; i += 1) {
+      const isAttendenceExists = attendenceSheet.some(
+        (item) => item.day === JSON.stringify(i)
+      );
+      if (!isAttendenceExists) {
+        attendenceSheet.push({ day: JSON.stringify(i), status: "N/A" });
+      }
+    }
+
+    attendenceSheet.sort((a, b) => {
+      const dayA = parseInt(a.day);
+      const dayB = parseInt(b.day);
+      if (dayA < dayB) {
+        return -1;
+      } else if (dayA > dayB) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    attendenceSheet.forEach((attendence) => {
+      res[attendence.day] = attendence.status;
+    });
+    monthlyAttendenceRecord.push(res);
+  });
+
+  try {
+    return res
+      .status(200)
+      .json({
+        result: monthlyAttendenceRecord,
+        message: "Attendence sheet exported successfully.",
+      });
+  } catch (error) {
+    return res.send({
+      status: "error",
+      message: err,
+    });
+  }
+});
+
 router.get("/export-attendence", verifyToken, async (req, res) => {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("Attendence Sheet");
-  const {email,month, year } = req.body;
+  const { email, month, year } = req.body;
   const filename = "Attendence.xlsx";
 
   const attendenceRegister = await attendenceSheetSchema.find({}).select({
@@ -242,11 +313,16 @@ router.get("/export-attendence", verifyToken, async (req, res) => {
 
   try {
     const buffer = await workbook.xlsx.writeBuffer();
-    await sendEmail(email, "BS-Foils - Attendence Sheet", "Please find the attached file below.", filename, buffer);
-      res
-        .status(200)
-        .json({ message: "Attendence sheet exported successfully." });
-   
+    await sendEmail(
+      email,
+      "BS-Foils - Attendence Sheet",
+      "Please find the attached file below.",
+      filename,
+      buffer
+    );
+    res
+      .status(200)
+      .json({ message: "Attendence sheet exported successfully." });
   } catch (err) {
     res.send({
       status: "error",

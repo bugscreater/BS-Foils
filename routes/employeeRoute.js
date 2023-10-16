@@ -117,4 +117,60 @@ router.delete("/delete-employee/:employeeId", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/get-total-employees",verifyToken,async(req,res)=>{
+  try {
+    const totalCounts = await employeeSchema.countDocuments({});
+    return res.status(200).json({totalCounts:totalCounts});
+  } catch (error) {
+    return res.send({
+      status: "error",
+      message: err,
+    });
+  }
+})
+
+
+
+router.get("/late-comers",verifyToken,async(req,res)=>{
+  try {
+    const {standardTime} = req.body;
+    const totalCounts = await employeeSchema.countDocuments({$and:[{todayAttendence: {$exists:true}},{"todayAttendence.inTime":{$gt:standardTime}}]})
+    return res.status(200).json({totalCounts:totalCounts});
+  } catch (error) {
+    return res.send({
+      status: "error",
+      message: err,
+    });
+  }
+})
+
+router.get("/on-timers",verifyToken,async(req,res)=>{
+  try {
+    const {standardTime} = req.body;
+    const totalCounts = await employeeSchema.countDocuments({$and:[{todayAttendence: {$exists:true}},{"todayAttendence.inTime":{$eq:standardTime}}]})
+    return res.status(200).json({totalCounts:totalCounts});
+  } catch (error) {
+    return res.send({
+      status: "error",
+      message: err,
+    });
+  }
+})
+
+
+router.get("/total-absent",verifyToken,async(req,res)=>{
+  try {
+    const totalCounts = await employeeSchema.countDocuments({$and:[{todayAttendence: {$exists:true}},{"todayAttendence.status":"Absent"}]})
+    return res.status(200).json({totalCounts:totalCounts});
+  } catch (error) {
+    return res.send({
+      status: "error",
+      message: error,
+    });
+  }
+})
+
+
+
+
 module.exports = router;
