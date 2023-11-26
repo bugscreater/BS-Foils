@@ -11,7 +11,7 @@ const sendEmail = async (email, subject, text,filename,buffer) => {
             debug:true,
             secureConnection:false,
             auth: {
-                user: "pandeyshubhambhu09@gmail.com",
+                user: "enter your email here...",
                 pass: process.env.PASS,
             },
             tls:{
